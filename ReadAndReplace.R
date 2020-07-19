@@ -1,5 +1,6 @@
 require(jsonlite)
 require(clipr)
+require(magrittr)
 # desc = read_clip_tbl(quote="", stringsAsFactors=F,header =F)
 readAndReplace <- function(my_file, desc, ...)
 {
@@ -31,8 +32,9 @@ genNAFields <- function(xx)
     xx[!is.na(xx)] = 0
     xx[is.na(xx)] = 1
     names(xx) = paste(fields,"na",sep="_")
-    return(xx)
+    return(as.logical(xx))
 }
+
 FillNAFields <- function(dd,method="median")
 {
   out = sapply(dd,function(x) {
@@ -41,5 +43,21 @@ FillNAFields <- function(dd,method="median")
       
     } )
   return(out)
+}
+
+class_dummy <- function (cl,prefix) 
+{
+  n <- length(cl)
+  cl <- as.factor(cl)
+  x <- matrix(0, n, length(levels(cl)))
+  x[(1L:n) + n * (unclass(cl) - 1L)] <- 1
+  dimnames(x) <- list(names(cl), paste(prefix,levels(cl),sep="_"))
+  list(x)
+}
+genDummy <- function(xx)
+{
+  y <- mapply( class_dummy,cl=xx,prefix=names(xx))
+  out <- do.call(cbind,y)
+  return(out)  
 }
 
